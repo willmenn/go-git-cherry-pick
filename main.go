@@ -5,10 +5,20 @@ import (
 	"os/exec"
 	"strings"
 	"regexp"
+	"github.com/labstack/echo"
+	"net/http"
 )
 
 func main() {
+	e := echo.New()
 
+	e.POST("/cherry-pick", cherryPick)
+
+	e.Logger.Fatal(e.Start(":1323"))
+
+}
+
+func cherryPick(c echo.Context) error{
 	gitClone()
 
 	logSplit := getGitLog()
@@ -18,6 +28,7 @@ func main() {
 	hash := getFirstHashForBranchCut(hashes, m)
 
 	fmt.Println(" ----- ")
+
 	fmt.Println(hash)
 
 	createBranch(hash)
@@ -27,8 +38,9 @@ func main() {
 	cherryPickOnlyCommitsThatDoesNotMatchRegex(hashes, m, hash)
 
 	printGitLog()
-
 	//deleteDir(err)
+
+	return c.JSON(http.StatusOK, "Done!")
 }
 
 func cherryPickOnlyCommitsThatDoesNotMatchRegex(hashes []string, m map[string]string, hash string) {

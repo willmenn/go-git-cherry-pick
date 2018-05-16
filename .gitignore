@@ -1,2 +1,6 @@
 go-git-cherry-pick
 .idea/
+
+vendor/
+Go*.lock
+Go*.toml
