@@ -17,7 +17,6 @@ type (
 	}
 )
 
-
 func main() {
 	e := echo.New()
 
@@ -27,7 +26,7 @@ func main() {
 
 }
 
-func cherryPick(c echo.Context) error{
+func cherryPick(c echo.Context) error {
 	p := new(param)
 	if err := c.Bind(p); err != nil {
 		return err
@@ -49,7 +48,7 @@ func cherryPick(c echo.Context) error{
 
 	fmt.Println(" ----- ")
 
-	cherryPickOnlyCommitsThatDoesNotMatchRegex(hashes, m, hash)
+	cherryPickOnlyCommitsThatDoesNotMatchRegex(hashes, m, hash, p.Regex)
 
 	printGitLog()
 	//deleteDir(err)
@@ -57,10 +56,10 @@ func cherryPick(c echo.Context) error{
 	return c.JSON(http.StatusOK, "Done!")
 }
 
-func cherryPickOnlyCommitsThatDoesNotMatchRegex(hashes []string, m map[string]string, hash string) {
+func cherryPickOnlyCommitsThatDoesNotMatchRegex(hashes []string, m map[string]string, hash string, regex string) {
 	var b1 bool
 	for _, h := range hashes {
-		b, err4 := regexp.MatchString("Feature.*", m[h])
+		b, err4 := regexp.MatchString(regex, m[h])
 		if (h == hash) {
 			b1 = true
 		}
@@ -97,6 +96,7 @@ func gitClone(url string) {
 		fmt.Print(out)
 	}
 }
+
 //"Feature.*"
 func getFirstHashForBranchCut(hashes []string, m map[string]string, regex string) string {
 	var hash string
