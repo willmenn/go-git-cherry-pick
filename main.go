@@ -9,6 +9,15 @@ import (
 	"net/http"
 )
 
+type (
+	param struct {
+		GitUrl     string `json:"gitUrl"`
+		Regex      string `json:"regex"`
+		BranchName string `json:"branchName"`
+	}
+)
+
+
 func main() {
 	e := echo.New()
 
@@ -19,19 +28,24 @@ func main() {
 }
 
 func cherryPick(c echo.Context) error{
-	gitClone()
+	p := new(param)
+	if err := c.Bind(p); err != nil {
+		return err
+	}
+
+	gitClone(p.GitUrl)
 
 	logSplit := getGitLog()
 
 	m, hashes := createArrayOfHashAndMapOfHashAndCommits(logSplit)
 
-	hash := getFirstHashForBranchCut(hashes, m)
+	hash := getFirstHashForBranchCut(hashes, m, p.Regex)
 
 	fmt.Println(" ----- ")
 
 	fmt.Println(hash)
 
-	createBranch(hash)
+	createBranch(hash, p.BranchName)
 
 	fmt.Println(" ----- ")
 
@@ -76,15 +90,15 @@ func createArrayOfHashAndMapOfHashAndCommits(logSplit []string) (map[string]stri
 	return m, hashes
 }
 
-func gitClone() {
-	out, err := exec.Command("git", "clone", "https://github.com/willmenn/zshell_pygmalion.git", "temp").Output()
+func gitClone(url string) {
+	out, err := exec.Command("git", "clone", url, "temp").Output()
 	if err != nil {
 		fmt.Print(err)
 		fmt.Print(out)
 	}
 }
-
-func getFirstHashForBranchCut(hashes []string, m map[string]string) string {
+//"Feature.*"
+func getFirstHashForBranchCut(hashes []string, m map[string]string, regex string) string {
 	var hash string
 	var bo bool
 	for _, h := range hashes {
@@ -93,7 +107,7 @@ func getFirstHashForBranchCut(hashes []string, m map[string]string) string {
 			bo = false
 		}
 		fmt.Println(h + " - " + m[h])
-		b, err := regexp.MatchString("Feature.*", m[h])
+		b, err := regexp.MatchString(regex, m[h])
 		if b && err == nil {
 			fmt.Println(h + " - " + m[h])
 			bo = b
@@ -103,8 +117,8 @@ func getFirstHashForBranchCut(hashes []string, m map[string]string) string {
 	return hash
 }
 
-func createBranch(hash string) {
-	cmd := exec.Command("git", "checkout", "-b", "temp", string(hash))
+func createBranch(hash string, branchName string) {
+	cmd := exec.Command("git", "checkout", "-b", branchName, string(hash))
 	cmd.Dir = "temp"
 	_, err := cmd.Output()
 	if err != nil {

@@ -4,3 +4,5 @@ go-git-cherry-pick
 vendor/
 Go*.lock
 Go*.toml
+
+temp/
