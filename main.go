@@ -11,7 +11,7 @@ func main() {
 
 	gitClone()
 
-	logSplit, _ := getGitLog()
+	logSplit := getGitLog()
 
 	m, hashes := createArrayOfHashAndMapOfHashAndCommits(logSplit)
 
@@ -101,7 +101,7 @@ func createBranch(hash string) {
 }
 
 func printGitLog() {
-	_, logSplit1 := getGitLog()
+	logSplit1 := getGitLog()
 	for _, l := range logSplit1 {
 		fmt.Println(l)
 	}
@@ -115,7 +115,7 @@ func deleteDir() {
 	}
 }
 
-func getGitLog() (*exec.Cmd, []string) {
+func getGitLog() ([]string) {
 	cmd := exec.Command("git", "log", "--oneline", "--no-color")
 	cmd.Dir = "temp"
 	out3, err3 := cmd.Output()
@@ -124,5 +124,5 @@ func getGitLog() (*exec.Cmd, []string) {
 	}
 	log := string(out3)
 	logSplit := strings.Split(log, "\n")
-	return logSplit, nil
+	return logSplit
 }
